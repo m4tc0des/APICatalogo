@@ -9,7 +9,7 @@ namespace APICatalogo.Context
         {
         }
         public DbSet<Category>? Categorys { get; set; } // Propriedade que representa a tabela de categorias no banco de dados
-        public DbSet<Product>? Products { get; set; } // Propriedade que representa a tabela de produtos no banco de dados
+        public DbSet<Products>? Products { get; set; } // Propriedade que representa a tabela de produtos no banco de dados
         public AppDbContext()
         {
         }
