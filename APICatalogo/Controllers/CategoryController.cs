@@ -18,35 +18,64 @@ namespace APICatalogo.Controllers
         [HttpGet("produtos")]
         public ActionResult<IEnumerable<Category>> GetCategoriasProduto()
         {
-            return _context.Categorys.Include(x => x.Products).ToList();
-        }
+            try
+            {
+                return _context.Categorys.AsNoTracking().Include(x => x.Products).ToList();
+            }
+            catch (Exception)
+            {
 
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ocoreu um erro ao tratar sua solicitação. Verifique");
+            }        
+        }
         [HttpGet]
         public ActionResult<IEnumerable<Category>> Get()
         {
-            return _context.Categorys.ToList();
+            try
+            {
+                return _context.Categorys.AsNoTracking().ToList();
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ocoreu um erro ao tratar sua solicitação. Verifique");
+            }
+
         }
         [HttpGet("{id:int}", Name = "ObterCategoria")]
         public ActionResult<Category> Get(int id)
         {
-            var categorys = _context.Products.FirstOrDefault(x => x.CategoryId == id);
-            if (categorys is null)
+            try
             {
-                return NotFound("Categoria nao encontrada. Verifique!");
+                var categorys = _context.Products.FirstOrDefault(x => x.CategoryId == id);
+                if (categorys is null)
+                {
+                    return NotFound("Categoria nao encontrada. Verifique!");
+                }
+                return Ok(categorys);
             }
-            return Ok(categorys);
-        }
+            catch (Exception)
+            {
 
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ocoreu um erro ao tratar sua solicitação. Verifique");
+            }
+        }
         [HttpPost]
         public ActionResult<Category> Post(Category category)
         {
-            if (category is null)
+            try
             {
-                return BadRequest();
+                if(category is null)
+            {
+                    return BadRequest("Dados invalidos. Verifique.");
+                }
+                _context.Categorys.Add(category);
+                _context.SaveChanges();
+                return new CreatedAtRouteResult("ObterCategoria", new { id = category.CategoryId }, category);
             }
-            _context.Categorys.Add(category);
-            _context.SaveChanges();
-            return new CreatedAtRouteResult("ObterCategoria", new { id = category.CategoryId}, category);
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ocoreu um erro ao tratar sua solicitação. Verifique");
+            }
         }
 
         [HttpPut("{id:int}")]
@@ -68,7 +97,7 @@ namespace APICatalogo.Controllers
             var category = _context.Products.FirstOrDefault(x => x.CategoryId == id);
             if (category is null)
             {
-                return NotFound("Categoria nao encontrada. Verifique!");
+                return NotFound($"Categoria com a id {id} nao encontrada. Verifique!");
             }
             _context.Products.Remove(category);
             _context.SaveChanges();

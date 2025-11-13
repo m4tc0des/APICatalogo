@@ -1,9 +1,7 @@
 ﻿using APICatalogo.Context;
 using APICatalogo.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Collections;
 
 namespace APICatalogo.Controllers
 {
@@ -20,56 +18,97 @@ namespace APICatalogo.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<Products>> Get()
         {
-            var products = _context.Products.ToList();
-            if (products is null)
+            try
             {
-                return NotFound();
+                var products = _context.Products.AsNoTracking().ToList();
+                if (products is null)
+                {
+                    return NotFound();
+                }
+                return products;
             }
-            return products;
+            catch (Exception)
+            {
+
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ocoreu um erro ao tratar sua solicitação.Verifique");
+            }
+            
         }
         [HttpGet("{id:int}", Name = "ObterProduto")]
         public ActionResult<Products> Get(int id)
         {
-            var product = _context.Products.FirstOrDefault(x => x.ProductId == id);
-            if (product is null)
+            try
             {
-                return NotFound("Produto nao encontrado. Verifique!");
+                var product = _context.Products.AsNoTracking().FirstOrDefault(x => x.ProductId == id);
+                if (product is null)
+                {
+                    return NotFound("Produto nao encontrado. Verifique!");
+                }
+                return product;
             }
-            return product;
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ocoreu um erro ao tratar sua solicitação.Verifique");
+            }
+
         }
         [HttpPost]
         public ActionResult<Products> Post(Products product)
         {
-            if (product is null)
+            try
             {
-                return BadRequest("Cadastro nao concluido. Verifique!");
+                if (product is null)
+                {
+                    return BadRequest("Cadastro nao concluido.Verifique!");
+                }
+                _context.Products.Add(product);
+                _context.SaveChanges();
+                return new CreatedAtRouteResult("ObterProduto", new { id = product.ProductId }, product);
             }
-            _context.Products.Add(product);
-            _context.SaveChanges();
-            return new CreatedAtRouteResult("ObterProduto", new { id = product.ProductId }, product);
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ocoreu um erro ao tratar sua solicitação.Verifique");
+            }
+
         }
         [HttpPut("{id:int}")]
         public ActionResult Put(int id, Products product)
         {
-            if (id != product.ProductId)
+            try
             {
-                return BadRequest("Atualizacao nao concluida. Verifique!");
+                if (id != product.ProductId)
+                {
+                    return BadRequest("Atualizacao nao concluida.Verifique!");
+                }
+                _context.Entry(product).State = EntityState.Modified;
+                _context.SaveChanges();
+                return Ok(product);
             }
-            _context.Entry(product).State = EntityState.Modified;
-            _context.SaveChanges();
-            return Ok(product);
+            catch (Exception)
+            {
+
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ocoreu um erro ao tratar sua solicitação.Verifique");
+            }
         }
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-            var product = _context.Products.FirstOrDefault(x => x.ProductId == id);
-            if (product is null)
+            try
+            {
+                var product = _context.Products.FirstOrDefault(x => x.ProductId == id);
+                if (product is null)
                 {
-                    return NotFound("Produto nao encontrado. Verifique!");
+                    return NotFound($"Produto com a id= {id} nao existe.Verifique!");
                 }
-            _context.Products.Remove(product);
-            _context.SaveChanges();
-            return Ok(product);
+                _context.Products.Remove(product);
+                _context.SaveChanges();
+                return Ok(product);
+            }
+            catch (Exception)
+            {
+
+                return StatusCode(StatusCodes.Status500InternalServerError, "Ocoreu um erro ao tratar sua solicitação.Verifique");
+            }
         }
     }
 }

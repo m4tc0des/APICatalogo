@@ -1,34 +1,34 @@
 using APICatalogo.Context;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
-var builder = WebApplication.CreateBuilder(args); // Criação do builder do aplicativo
+var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers(); // Adiciona suporte a controladores
+builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions//Tratamento de serializacao para evitar referencia ciclica
+.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer(); // Adiciona suporte para exploração de endpoints
-builder.Services.AddSwaggerGen(); // Adiciona suporte para geração de documentação Swagger
-
-string MySqlConnection = builder.Configuration.GetConnectionString("DefaultConnection"); // Obtém a string de conexão do MySQL do arquivo de configuração
+builder.Services.AddEndpointsApiExplorer(); 
+builder.Services.AddSwaggerGen();
+string MySqlConnection = builder.Configuration.GetConnectionString("DefaultConnection"); 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(MySqlConnection, ServerVersion.AutoDetect(MySqlConnection)) // Configura o DbContext para usar MySQL com detecção automática da versão do servidor
+    options.UseMySql(MySqlConnection, ServerVersion.AutoDetect(MySqlConnection))
 );
 
-var app = builder.Build(); // Criação do aplicativo
+var app = builder.Build(); 
 
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment()) // Verifica se o ambiente é de desenvolvimento
+if (app.Environment.IsDevelopment()) 
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection(); // Redireciona requisições HTTP para HTTPS
+app.UseHttpsRedirection(); 
 
-app.UseAuthorization(); // Adiciona middleware de autorização
+app.UseAuthorization(); 
 
-app.MapControllers(); // Mapeia os controladores para os endpoints
+app.MapControllers(); 
 
-app.Run(); // Executa o aplicativo
+app.Run(); 
